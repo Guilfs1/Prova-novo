@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8" />
+    <title>Busca de Filmes</title>
+</head>
+<body>
+    <h2>Busca de Filmes</h2>
+    <input type="text" id="busca" placeholder="Digite o nome do filme" />
+    <button onclick="buscarFilmes()">Buscar</button>
+
+    <div id="resultados"></div>
+
+    <script>
+        function buscarFilmes() {
+            const titulo = document.getElementById('busca').value.trim();
+            if (!titulo) return alert('Digite um nome para buscar');
+
+            const apiKey = '4a3b711b'; // chave pública OMDb
+            const url = `https://www.omdbapi.com/?apikey=${apiKey}&s=${encodeURIComponent(titulo)}`;
+
+            fetch(url)
+                .then(response => response.json())
+                .then(data => {
+                    const div = document.getElementById('resultados');
+                    div.innerHTML = '';
+                    if (data.Response === "True") {
+                        data.Search.forEach(filme => {
+                            const filmeDiv = document.createElement('div');
+                            filmeDiv.innerHTML = `
+                                <h3>${filme.Title} (${filme.Year})</h3>
+                                <img src="${filme.Poster !== 'N/A' ? filme.Poster : ''}" alt="${filme.Title}" width="100" />
+                            `;
+                            div.appendChild(filmeDiv);
+                        });
+                    } else {
+                        div.textContent = 'Nenhum filme encontrado.';
+                    }
+                })
+                .catch(() => alert('Erro na busca'));
+        }
+    </script>
+</body>
+</html>

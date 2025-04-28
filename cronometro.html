@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8" />
+    <title>Cronômetro Simples</title>
+</head>
+<body>
+    <h2>Cronômetro</h2>
+    <p id="tempo">00:00:00</p>
+    <button id="btnIniciar">Iniciar</button>
+    <button id="btnPausar">Pausar</button>
+    <button id="btnResetar">Resetar</button>
+
+    <h3>Pausas:</h3>
+    <ul id="listaPausas"></ul>
+
+    <script>
+        let inicio = 0;
+        let tempoDecorrido = 0;
+        let intervalo = null;
+        let pausas = [];
+
+        function formatarTempo(ms) {
+            const totalSeg = Math.floor(ms / 1000);
+            const h = String(Math.floor(totalSeg / 3600)).padStart(2, '0');
+            const m = String(Math.floor((totalSeg % 3600) / 60)).padStart(2, '0');
+            const s = String(totalSeg % 60).padStart(2, '0');
+            return `${h}:${m}:${s}`;
+        }
+
+        document.getElementById('btnIniciar').onclick = () => {
+            if (!intervalo) {
+                inicio = Date.now() - tempoDecorrido;
+                intervalo = setInterval(() => {
+                    tempoDecorrido = Date.now() - inicio;
+                    document.getElementById('tempo').textContent = formatarTempo(tempoDecorrido);
+                }, 1000);
+            }
+        };
+
+        document.getElementById('btnPausar').onclick = () => {
+            if (intervalo) {
+                clearInterval(intervalo);
+                intervalo = null;
+                pausas.push(formatarTempo(tempoDecorrido));
+                const li = document.createElement('li');
+                li.textContent = pausas[pausas.length - 1];
+                document.getElementById('listaPausas').appendChild(li);
+            }
+        };
+
+        document.getElementById('btnResetar').onclick = () => {
+            clearInterval(intervalo);
+            intervalo = null;
+            tempoDecorrido = 0;
+            pausas = [];
+            document.getElementById('tempo').textContent = '00:00:00';
+            document.getElementById('listaPausas').innerHTML = '';
+        };
+    </script>
+</body>
+</html>

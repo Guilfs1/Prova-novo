@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8" />
+    <title>Bloco de Notas Simples com Título - Corrigido</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 30px auto;
+            padding: 0 15px;
+        }
+        h2, h3 {
+            text-align: center;
+        }
+        #notaTexto, #tituloNota {
+            width: 100%;
+            box-sizing: border-box;
+            margin-bottom: 10px;
+            font-size: 1rem;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            resize: vertical;
+        }
+        #listaNotas li {
+            background: #f9f9f9;
+            margin: 5px 0;
+            padding: 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        #listaNotas li strong {
+            margin-right: 10px;
+        }
+        #listaNotas button {
+            background: #e74c3c;
+            border: none;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+        #listaNotas button:hover {
+            background: #c0392b;
+        }
+    </style>
+</head>
+<body>
+    <h2>Bloco de Notas</h2>
+    <input type="text" id="tituloNota" placeholder="Digite o título da nota" />
+    <textarea id="notaTexto" rows="5" placeholder="Digite sua nota aqui..."></textarea><br>
+    <button onclick="salvarNota()">Salvar Nota</button>
+
+    <h3>Notas:</h3>
+    <ul id="listaNotas"></ul>
+
+    <script>
+        // Recupera notas do localStorage ou inicia array vazio
+        let notas = JSON.parse(localStorage.getItem('notas')) || [];
+
+        // Função para escapar HTML e evitar erros e injeção
+        function escapeHtml(text) {
+            if (typeof text !== 'string') {
+                text = text == null ? '' : String(text);
+            }
+            return text.replace(/[&<>"']/g, function(m) {
+                return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m];
+            });
+        }
+
+        // Exibe lista de notas na tela
+        function listarNotas() {
+            const lista = document.getElementById('listaNotas');
+            lista.innerHTML = '';
+            notas.forEach((nota, i) => {
+                const li = document.createElement('li');
+                li.innerHTML = `<strong>${escapeHtml(nota.titulo)}</strong>: ${escapeHtml(nota.texto)}`;
+                li.onclick = () => abrirNota(i);
+
+                const btnExcluir = document.createElement('button');
+                btnExcluir.textContent = 'Excluir';
+                btnExcluir.onclick = (e) => {
+                    e.stopPropagation();
+                    if (confirm('Deseja realmente excluir esta nota?')) {
+                        notas.splice(i, 1);
+                        salvarNotasLocal();
+                        listarNotas();
+                        limparCampos();
+                    }
+                };
+
+                li.appendChild(btnExcluir);
+                lista.appendChild(li);
+            });
+        }
+
+        // Salva notas no localStorage
+        function salvarNotasLocal() {
+            localStorage.setItem('notas', JSON.stringify(notas));
+        }
+
+        // Salva nova nota ou atualiza existente
+        function salvarNota() {
+            const titulo = document.getElementById('tituloNota').value.trim();
+            const texto = document.getElementById('notaTexto').value.trim();
+
+            if (!titulo || !texto) {
+                alert('Por favor, preencha o título e o texto da nota.');
+                return;
+            }
+
+            // Se estiver editando, atualiza nota existente
+            if (typeof salvarNota.editIndex === 'number') {
+                notas[salvarNota.editIndex] = { titulo, texto };
+                salvarNota.editIndex = undefined;
+            } else {
+                // Adiciona nova nota
+                notas.push({ titulo, texto });
+            }
+
+            salvarNotasLocal();
+            listarNotas();
+            limparCampos();
+        }
+
+        // Abre nota para edição ao clicar na lista
+        function abrirNota(index) {
+            const nota = notas[index];
+            document.getElementById('tituloNota').value = nota.titulo;
+            document.getElementById('notaTexto').value = nota.texto;
+            salvarNota.editIndex = index; // marca índice para edição
+        }
+
+        // Limpa campos de entrada
+        function limparCampos() {
+            document.getElementById('tituloNota').value = '';
+            document.getElementById('notaTexto').value = '';
+            salvarNota.editIndex = undefined;
+        }
+
+        // Inicializa lista ao carregar a página
+        listarNotas();
+    </script>
+</body>
+</html>
